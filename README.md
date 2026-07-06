@@ -1,3 +1,4 @@
+ HEAD
 # Little Learners
 
 Little Learners is a Flutter e-learning app for toddlers ages 1 to 4. This repository is being built from scratch, using the evaluated Edutainment project only as product inspiration.
@@ -91,3 +92,6 @@ Koala audio cues are powered by `audioplayers` and can come from either bundled 
 - A cue key like `koala_math_intro` resolves to `assets/audio/koala/koala_math_intro.mp3`.
 - A cue key that is already a full `https://...` URL plays from that remote source, which is the path to use for Firebase Storage/CDN-backed admin content.
 - If the file or URL cannot be played, the app falls back to the safe platform sound cue so the Koala button never breaks the flow.
+
+# Littlelearner
+ 11825378c29d46d61d6b1ef8d96b37206aae2330
