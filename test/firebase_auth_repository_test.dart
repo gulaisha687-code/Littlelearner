@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:little_learners/models/onboarding.dart';
 import 'package:little_learners/models/parent_account.dart';
@@ -74,6 +75,17 @@ void main() {
 
       expect(authService.passwordResetEmail, 'parent@example.com');
       expect(authService.didSignOut, isTrue);
+    });
+    test('maps Firebase auth setup errors to an actionable message', () {
+      final message = firebaseAuthMessageFor(
+        FirebaseAuthException(
+          code: 'internal-error',
+          message:
+          'An internal error has occurred. [ CONFIGURATION_NOT_FOUND ]',
+        ),
+      );
+
+      expect(message, contains('Email/Password sign-in is not enabled'));
     });
   });
 }

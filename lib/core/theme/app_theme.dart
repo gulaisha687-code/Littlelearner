@@ -8,11 +8,11 @@ class AppTheme {
   static ThemeData light() {
     final base = ThemeData(
       colorScheme: ColorScheme.fromSeed(
-        seedColor: AppColors.leaf,
+        seedColor: AppColors.plum,
         brightness: Brightness.light,
       ).copyWith(
-        primary: AppColors.forest,
-        secondary: AppColors.sky,
+        primary: AppColors.violet,
+        secondary: AppColors.honey,
         tertiary: AppColors.coral,
         surface: AppColors.panel,
         onSurface: AppColors.ink,
@@ -36,7 +36,7 @@ class AppTheme {
     surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+          borderRadius: BorderRadius.circular(18),
           side: const BorderSide(color: AppColors.line),
         ),
      ),
@@ -67,7 +67,7 @@ class AppTheme {
     vertical: 16,
     ),
     border: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(18),
     borderSide: const BorderSide(color: AppColors.line),
     ),
     enabledBorder: OutlineInputBorder(
@@ -75,13 +75,13 @@ class AppTheme {
     borderSide: const BorderSide(color: AppColors.line),
     ),
     focusedBorder: OutlineInputBorder(
-    borderRadius: BorderRadius.circular(8),
-    borderSide: const BorderSide(color: AppColors.sky, width: 2),
+    borderRadius: BorderRadius.circular(18),
+    borderSide: const BorderSide(color: AppColors.plum, width: 2),
     ),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
-        backgroundColor: AppColors.forest,
+        backgroundColor: AppColors.violet,
           foregroundColor: Colors.white,
           minimumSize: const Size(48, 52),
     textStyle: const TextStyle(
@@ -89,7 +89,7 @@ class AppTheme {
     fontWeight: FontWeight.w800,
     ),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(18),
           ),
         ),
       ),
@@ -106,20 +106,20 @@ class AppTheme {
       ),
     textButtonTheme: TextButtonThemeData(
     style: TextButton.styleFrom(
-    foregroundColor: AppColors.forest,
+    foregroundColor: AppColors.violet,
     textStyle: const TextStyle(fontWeight: FontWeight.w800),
     ),
     ),
     chipTheme: base.chipTheme.copyWith(
     backgroundColor: AppColors.panel,
-    selectedColor: AppColors.mint,
+    selectedColor: AppColors.lavender,
     side: const BorderSide(color: AppColors.line),
     labelStyle: const TextStyle(
     color: AppColors.ink,
     fontWeight: FontWeight.w700,
     ),
     shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(18),
     ),
     ),
     navigationBarTheme: NavigationBarThemeData(
@@ -127,14 +127,14 @@ class AppTheme {
     elevation: 4,
     backgroundColor: AppColors.panel,
     surfaceTintColor: Colors.transparent,
-    indicatorColor: AppColors.mint,
+    indicatorColor: AppColors.lavender,
     indicatorShape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(18),
     ),
     labelTextStyle: WidgetStateProperty.resolveWith((states) {
     return TextStyle(
     color: states.contains(WidgetState.selected)
-    ? AppColors.forest
+    ? AppColors.violet
         : AppColors.ink.withValues(alpha: 0.62),
     fontSize: 11,
     fontWeight: states.contains(WidgetState.selected)
@@ -144,7 +144,7 @@ class AppTheme {
     }),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
-    color: AppColors.leaf,
+    color: AppColors.plum,
     linearTrackColor: AppColors.line,
     ),
     snackBarTheme: SnackBarThemeData(
@@ -152,14 +152,14 @@ class AppTheme {
     contentTextStyle: const TextStyle(color: Colors.white),
     behavior: SnackBarBehavior.floating,
     shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(18),
     ),
     ),
     dialogTheme: DialogThemeData(
     backgroundColor: AppColors.panel,
     surfaceTintColor: Colors.transparent,
     shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.circular(8),
+    borderRadius: BorderRadius.circular(18),
     ),
     ),
     bottomSheetTheme: const BottomSheetThemeData(
@@ -167,7 +167,7 @@ class AppTheme {
     surfaceTintColor: Colors.transparent,
     showDragHandle: true,
     shape: RoundedRectangleBorder(
-    borderRadius: BorderRadius.vertical(top: Radius.circular(8)),
+    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
     ),
     ),
     );

@@ -1,3 +1,4 @@
+import '../../widgets/child_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../core/constants/app_colors.dart';
@@ -50,20 +51,31 @@ class _ProfileSelectionPageState extends State<ProfileSelectionPage> {
 
     return Scaffold(
       appBar: AppBar(
-        toolbarHeight: 64,
-        backgroundColor: AppColors.ink,
+        toolbarHeight: 72,
+        backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
+        flexibleSpace: const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [AppColors.grape, AppColors.violet],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+        ),
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Parent Dashboard',
-              style: TextStyle(fontWeight: FontWeight.w900),
+            Text(
+              'Welcome back, ${_parentLabel(parent.email)} 👋',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontSize: 21, fontWeight: FontWeight.w900),
             ),
             const SizedBox(height: 2),
-            Text(
-              'Welcome back, ${_parentLabel(parent.email)}',
-              style: const TextStyle(
+            const Text(
+              'Parent Dashboard',
+              style: TextStyle(
                 color: Colors.white70,
                 fontSize: 12,
                 fontWeight: FontWeight.w500,
@@ -535,19 +547,32 @@ class _ActiveChildCard extends StatelessWidget {
 
     return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.ink,
-        borderRadius: BorderRadius.circular(18),
+        gradient: const LinearGradient(
+          colors: [AppColors.grape, AppColors.violet],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.grape.withValues(alpha: 0.18),
+            blurRadius: 18,
+            offset: const Offset(0, 9),
+          ),
+        ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
         Row(
           children: [
-            _AvatarBubble(
+            ChildAvatar(
               name: profile.name,
-              color: AppColors.honey,
+              avatarValue: profile.avatarAsset,
+              backgroundColor: AppColors.honey,
+              borderColor: Colors.white.withValues(alpha: 0.7),
               radius: 24,
           ),
           const SizedBox(width: 12),
@@ -617,8 +642,8 @@ class _ActiveChildCard extends StatelessWidget {
             const SizedBox(height: 12),
             FilledButton.icon(
                 style: FilledButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  foregroundColor: AppColors.ink,
+                  backgroundColor: AppColors.honey,
+                  foregroundColor: AppColors.coral,
               ),
               onPressed: onStart,
               icon: const Icon(Icons.play_arrow_rounded),
@@ -658,7 +683,8 @@ class _ChildSwitchChips extends StatelessWidget {
                       : AppColors.ink,
                   fontWeight: FontWeight.w800,
                 ),
-                selectedColor: AppColors.ink,
+                selectedColor: AppColors.violet,
+                backgroundColor: AppColors.lavender,
                 onSelected: (_) {
                   context.read<ActiveChildSession>().selectProfile(profile);
                 },
@@ -720,8 +746,8 @@ class _StageProgressTile extends StatelessWidget {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AppColors.panel,
-        border: Border.all(color: AppColors.line),
-        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.lilac.withValues(alpha: 0.46)),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Row(
         children: [
@@ -752,7 +778,7 @@ class _StageProgressTile extends StatelessWidget {
                     minHeight: 5,
                     value: summary.progress,
                     color: color,
-                    backgroundColor: AppColors.line,
+                    backgroundColor: AppColors.lavender,
                   ),
                 ),
               ],
@@ -835,7 +861,7 @@ class _RewardTile extends StatelessWidget {
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         border: Border.all(color: color.withValues(alpha: 0.2)),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: Column(
         children: [
@@ -888,21 +914,29 @@ class _ProfileManagementCard extends StatelessWidget {
     return Container(
         decoration: BoxDecoration(
           color: AppColors.panel,
-          border: Border.all(color: AppColors.line),
-          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.lilac.withValues(alpha: 0.48)),
+          borderRadius: BorderRadius.circular(20),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
             children: [
             Container(
-            color: accentColor,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [accentColor, AppColors.violet],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
             padding: const EdgeInsets.all(14),
             child: Row(
               children: [
-              _AvatarBubble(
+                ChildAvatar(
               name: profile.name,
-              color: Colors.white.withValues(alpha: 0.9),
-              textColor: AppColors.ink,
+                  avatarValue: profile.avatarAsset,
+                  backgroundColor: Colors.white.withValues(alpha: 0.9),
+                  textColor: AppColors.ink,
+                  borderColor: Colors.white.withValues(alpha: 0.62),
               radius: 23,
             ),
             const SizedBox(width: 12),
@@ -1051,34 +1085,7 @@ class _CompactIconButton extends StatelessWidget {
   }
 }
 
-class _AvatarBubble extends StatelessWidget {
-  const _AvatarBubble({
-    required this.name,
-    required this.color,
-    this.textColor = AppColors.ink,
-    this.radius = 20,
-  });
 
-  final String name;
-  final Color color;
-  final Color textColor;
-  final double radius;
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: color,
-      child: Text(
-        _initials(name),
-        style: TextStyle(
-          color: textColor,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    );
-  }
-}
 
 class _SectionLabel extends StatelessWidget {
   const _SectionLabel(this.label);
@@ -1128,9 +1135,9 @@ class _EmptyChildProfilesCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: AppColors.panel,
-        border: Border.all(color: AppColors.line),
-        borderRadius: BorderRadius.circular(18),
+        color: AppColors.lavender,
+        border: Border.all(color: AppColors.lilac.withValues(alpha: 0.58)),
+        borderRadius: BorderRadius.circular(24),
       ),
       child: Column(
         children: [
@@ -1138,10 +1145,10 @@ class _EmptyChildProfilesCard extends StatelessWidget {
             width: 54,
             height: 54,
             decoration: BoxDecoration(
-              color: AppColors.mint,
-              borderRadius: BorderRadius.circular(16),
+              color: AppColors.honey.withValues(alpha: 0.74),
+              borderRadius: BorderRadius.circular(18),
             ),
-            child: const Icon(Icons.child_care, color: AppColors.ink),
+            child: const Icon(Icons.child_care, color: AppColors.violet),
           ),
           const SizedBox(height: 14),
           Text(
@@ -1178,8 +1185,8 @@ class _SoftLoadingCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: AppColors.panel,
-        border: Border.all(color: AppColors.line),
-        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.lilac.withValues(alpha: 0.48)),
+        borderRadius: BorderRadius.circular(18),
       ),
       child: const Row(
         children: [
@@ -1310,6 +1317,7 @@ IconData _moduleIcon(LevelProgressReport report) {
     LevelType.counting => Icons.onetwothree_outlined,
     LevelType.story => Icons.menu_book_outlined,
     LevelType.drawing => Icons.draw_outlined,
+    LevelType.tracing => Icons.gesture_outlined,
     LevelType.matching => Icons.extension_outlined,
     LevelType.flashcards => Icons.style_outlined,
   };
@@ -1335,12 +1343,6 @@ ChildReport? _childReportFor(ParentReport? report, String profileId) {
   return null;
 }
 
-String _initials(String value) {
-  final parts = value.trim().split(RegExp(r'\s+'));
-  if (parts.isEmpty || parts.first.isEmpty) return 'LL';
-  if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-  return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
-}
 
 String _parentLabel(String email) {
   final name = email.split('@').first.trim();
@@ -1350,18 +1352,18 @@ String _parentLabel(String email) {
 
 Color _profileAccent(int index) {
   const colors = [
-    AppColors.ink,
-    AppColors.leaf,
-    Color(0xFF9B5B09),
+    AppColors.grape,
+    AppColors.coral,
+    AppColors.sky,
   ];
   return colors[index % colors.length];
 }
 
 Color _progressColor(int index) {
   const colors = [
-    AppColors.leaf,
+    AppColors.plum,
     AppColors.sky,
-    AppColors.honey,
+    AppColors.coral,
   ];
   return colors[index % colors.length];
 }
