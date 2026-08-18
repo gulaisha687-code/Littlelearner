@@ -1,5 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:flutter/foundation.dart';
 import '../../models/parent_account.dart';
 import '../../repositories/auth_repository.dart';
 
@@ -46,7 +46,7 @@ class FirebaseAuthService implements ParentAuthRemoteDataSource {
       );
       return _toParentAccount(credential.user);
     } on FirebaseAuthException catch (error) {
-      throw AuthException(_messageFor(error));
+      throw AuthException(firebaseAuthMessageFor(error));
     }
   }
 
@@ -62,7 +62,7 @@ class FirebaseAuthService implements ParentAuthRemoteDataSource {
       );
       return _toParentAccount(credential.user);
     } on FirebaseAuthException catch (error) {
-      throw AuthException(_messageFor(error));
+      throw AuthException(firebaseAuthMessageFor(error));
     }
   }
 
@@ -71,7 +71,7 @@ class FirebaseAuthService implements ParentAuthRemoteDataSource {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim().toLowerCase());
     } on FirebaseAuthException catch (error) {
-      throw AuthException(_messageFor(error));
+      throw AuthException(firebaseAuthMessageFor(error));
     }
   }
 
@@ -88,9 +88,22 @@ class FirebaseAuthService implements ParentAuthRemoteDataSource {
       createdAt: user.metadata.creationTime ?? DateTime.now(),
     );
   }
+}
 
-  String _messageFor(FirebaseAuthException error) {
+  @visibleForTesting
+  String firebaseAuthMessageFor(FirebaseAuthException error) {
+    final message = error.message ?? '';
     switch (error.code) {
+      case 'configuration-not-found':
+      case 'operation-not-allowed':
+        return _firebaseSetupMessage;
+      case 'internal-error':
+        if (message.contains('CONFIGURATION_NOT_FOUND')) {
+          return _firebaseSetupMessage;
+        }
+        return message.isEmpty
+            ? 'Authentication failed. Please try again.'
+            : message;
       case 'email-already-in-use':
         return 'An account already exists for this email.';
       case 'invalid-email':
@@ -104,7 +117,14 @@ class FirebaseAuthService implements ParentAuthRemoteDataSource {
       case 'weak-password':
         return 'Use a stronger password.';
       default:
-        return error.message ?? 'Authentication failed. Please try again.';
+        return message.isEmpty
+            ? 'Authentication failed. Please try again.'
+            : message;
     }
   }
-}
+
+  const _firebaseSetupMessage =
+      'Firebase Email/Password sign-in is not enabled yet. In Firebase Console, '
+      'open Authentication > Sign-in method and enable Email/Password.';
+
+

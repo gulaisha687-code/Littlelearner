@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'core/theme/app_scroll_behavior.dart';
 
 import 'core/config/app_config.dart';
 import 'core/routing/app_router.dart';
@@ -301,6 +302,7 @@ class LittleLearnersApp extends StatelessWidget {
         title: 'Little Learners',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
+        scrollBehavior: const AppScrollBehavior(),
         initialRoute: RouteNames.splash,
         onGenerateRoute: AppRouter.generateRoute,
       ),
