@@ -2,7 +2,7 @@ class LocalDbSchema {
   const LocalDbSchema._();
 
   static const databaseName = 'little_learners.db';
-  static const version = 4;
+  static const version = 5;
 
   static const childProfiles = 'child_profiles';
   static const syncOutbox = 'sync_outbox';
@@ -137,8 +137,18 @@ CREATE TABLE $levelProgress (
     'CREATE INDEX idx_level_progress_child ON $levelProgress(childId)',
     'CREATE INDEX idx_level_progress_isSynced ON $levelProgress(isSynced)',
   ];
+  /// Small key/value store for local bookkeeping that is not domain data.
+  /// Currently holds which revision of the bundled content is installed.
+  static const createAppMetaTable = '''
+CREATE TABLE $appMeta (
+  metaKey TEXT PRIMARY KEY,
+  metaValue TEXT NOT NULL
+)
+''';
+
 
   static const createStatements = [
+    createAppMetaTable,
     createChildProfilesTable,
     createSyncOutboxTable,
     createModulesTable,
@@ -156,6 +166,7 @@ CREATE TABLE $levelProgress (
     'CREATE INDEX idx_sync_outbox_entity ON $syncOutbox(entityType, entityId)',
   ];
 
+
   static const version3Statements = [
     createModulesTable,
     createLevelsTable,
@@ -172,5 +183,8 @@ CREATE TABLE $levelProgress (
     createLevelProgressTable,
     'CREATE INDEX idx_level_progress_child ON $levelProgress(childId)',
     'CREATE INDEX idx_level_progress_isSynced ON $levelProgress(isSynced)',
+  ];
+  static const version5Statements = [
+    createAppMetaTable,
   ];
 }

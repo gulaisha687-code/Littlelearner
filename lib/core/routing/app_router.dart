@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-
+import '../../views/onboarding/onboarding_language_page.dart';
 import '../../models/video_lesson.dart';
 import '../../views/admin/admin_content_page.dart';
+import '../../models/canvas_work.dart';
+import '../../models/learning_level.dart';
+import '../../models/parent_mark.dart';
 import '../../views/admin/admin_dashboard_page.dart';
 import '../../views/auth/forgot_password_page.dart';
 import '../../views/auth/login_page.dart';
+import '../../views/marking/parent_marking_page.dart';
 import '../../views/auth/signup_page.dart';
 import '../../views/child_dashboard/home_page.dart';
 import '../../views/child_dashboard/level_player_page.dart';
@@ -40,15 +44,30 @@ class CelebrationArgs {
 class QuizArgs {
   const QuizArgs({
     required this.levelId,
-    this.tracingScore,
+    this.parentMark,
   });
 
   final String levelId;
 
-  /// Accuracy already earned on a tracing level, carried into the quiz so the
-  /// final mark reflects both halves of the level instead of only the quiz.
-  final int? tracingScore;
+  /// The grade a parent already gave the canvas half of this level, carried
+  /// into the quiz so the final mark reflects both halves instead of only the
+  /// questions.
+  final int? parentMark;
 }
+
+class ParentMarkingArgs {
+  const ParentMarkingArgs({
+    required this.level,
+    required this.work,
+  });
+
+  final LearningLevel level;
+
+  /// The finished pages to show the parent: one for a drawing level, one per
+  /// letter for a tracing level.
+  final List<CanvasWork> work;
+}
+
 
 
 class VideoPlayerArgs {
@@ -69,11 +88,14 @@ class ProfileEditArgs {
 
 class ParentalLockArgs {
   const ParentalLockArgs({
-    required this.successRoute,
+    this.successRoute,
     this.successArguments,
   });
 
-  final String successRoute;
+  // Where to go once the challenge is solved. Leave it null to have the lock
+  /// pop `true` instead, which is what a caller wants when it has more to do
+  /// after the parent is verified rather than a screen to hand off to.
+  final String? successRoute;
   final Object? successArguments;
 }
 
@@ -81,6 +103,26 @@ class AppRouter {
   const AppRouter._();
 
   static Route<dynamic> generateRoute(RouteSettings settings) {
+    // Routes that hand a value back to whoever pushed them have to be built
+    // with a matching route type: `Navigator.pushNamed<T>` casts what this
+    // returns to `Route<T>`, and a `Route<void>` fails that cast.
+    if (settings.name == RouteNames.parentalLock) {
+      return MaterialPageRoute<bool>(
+        settings: settings,
+        builder: (_) => ParentalLockPage(
+          args: settings.arguments as ParentalLockArgs? ??
+              const ParentalLockArgs(),
+        ),
+      );
+    }
+    if (settings.name == RouteNames.parentMarking) {
+      return MaterialPageRoute<ParentMark>(
+        settings: settings,
+        builder: (_) => ParentMarkingPage(
+          args: settings.arguments! as ParentMarkingArgs,
+        ),
+      );
+    }
     return MaterialPageRoute<void>(
       settings: settings,
       builder: (_) => switch (settings.name) {
@@ -89,6 +131,7 @@ class AppRouter {
         RouteNames.signup => const SignupPage(),
         RouteNames.forgotPassword => const ForgotPasswordPage(),
         RouteNames.onboardingManual => const ManualPage(),
+        RouteNames.onboardingLanguage => const OnboardingLanguagePage(),
         RouteNames.onboardingTest => const ReadinessTestPage(),
         RouteNames.adminDashboard => const AdminDashboardPage(),
         RouteNames.adminContent => const AdminContentPage(),
@@ -99,9 +142,7 @@ class AppRouter {
         RouteNames.parentReports => const ParentReportsPage(),
         RouteNames.parentReminders => const ParentRemindersPage(),
         RouteNames.leaderboard => const LeaderboardPage(),
-        RouteNames.parentalLock => ParentalLockPage(
-            args: settings.arguments! as ParentalLockArgs,
-          ),
+        
         RouteNames.childHome => const HomePage(),
         RouteNames.moduleLevels => ModuleLevelsPage(
             moduleId: settings.arguments! as String,

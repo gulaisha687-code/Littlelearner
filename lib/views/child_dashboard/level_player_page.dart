@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../../models/canvas_work.dart';
+import '../../models/parent_mark.dart';
 import 'package:provider/provider.dart';
 import '../../core/utils/module_visuals.dart';
 import '../../core/routing/app_router.dart';
@@ -85,17 +87,22 @@ class _LevelBody extends StatelessWidget {
 
     // Canvas activities take over the whole body: they need the height, and a
     // drawing surface inside a scrolling list would fight the scroll gesture.
+    // Both hand their finished pages to a grown-up to mark rather than
+    // finishing the level themselves.
     if (level.type == LevelType.drawing) {
       return DrawingLevelView(
         level: level,
-        onFinish: canFinish ? () => _complete(context, child.id) : null,
+        onFinish: canFinish
+            ? (work) => _markCanvasWork(context, child.id, work, activity)
+            : null,
       );
     }
     if (level.type == LevelType.tracing) {
       return TracingLevelView(
         level: level,
-        onFinish:
-        canFinish ? () => _finishTracing(context, child.id, activity) : null,
+        onFinish: canFinish
+            ? (work) => _markCanvasWork(context, child.id, work, activity)
+            : null,
       );
     }
 
@@ -226,26 +233,45 @@ class _LevelBody extends StatelessWidget {
 
   /// Tracing levels are graded, so they follow the same rule as a quiz: below
   /// the passing score the level is retried instead of rewarded.
-  Future<void> _finishTracing(
+  /// Hands a finished drawing or tracing page to a grown-up.
+  ///
+  /// Nothing here judges the work: the parental lock proves an adult is holding
+  /// the device, and the mark they choose becomes the level's score.
+  Future<void> _markCanvasWork(
       BuildContext context,
       String childId,
+      List<CanvasWork> work,
       LevelActivityViewModel activity,
       ) async {
-    final score = activity.traceLevelScore;
-    if (score < level.passingScore) {
+    final navigator = Navigator.of(context);
+    final unlocked = await navigator.pushNamed<bool>(
+      RouteNames.parentalLock,
+      arguments: const ParentalLockArgs(),
+    );
+    if (unlocked != true || !context.mounted) return;
+
+    final mark = await navigator.pushNamed<ParentMark>(
+      RouteNames.parentMarking,
+      arguments: ParentMarkingArgs(level: level, work: work),
+    );
+    // Backing out without choosing leaves the page exactly as it was, so the
+    // child's work survives a parent who wants another look.
+    if (mark == null || !context.mounted) return;
+
+    if (!mark.passes(level.passingScore)) {
       await showDialog<void>(
         context: context,
         builder: (dialogContext) {
           return AlertDialog(
-            title: const Text('Try again'),
+            title: const Text('More practice'),
             content: Text(
-              'Tracing score: $score%. You need ${level.passingScore}% to '
-                  'pass this level.',
+              'This level needs ${level.passingScore}% to pass, so it starts '
+                  'again with a fresh page.',
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Keep practicing'),
+                child: const Text('Start again'),
               ),
             ],
           );
@@ -255,7 +281,7 @@ class _LevelBody extends StatelessWidget {
       return;
     }
 
-    await _complete(context, childId, score: score);
+    await _complete(context, childId, score: mark.score);
   }
 
   Future<void> _complete(
@@ -268,9 +294,9 @@ class _LevelBody extends StatelessWidget {
       if (child != null && AgeStageHelper.shouldShowQuiz(child.age)) {
         Navigator.of(context).pushReplacementNamed(
           RouteNames.quiz,
-// Any tracing accuracy earned so far rides along, so the quiz can
-          // average the two rather than replacing the mark.
-          arguments: QuizArgs(levelId: level.id, tracingScore: score),
+// Any mark a parent has already given rides along, so the quiz can
+          // average the two rather than replacing it.
+          arguments: QuizArgs(levelId: level.id, parentMark: score),
         );
         return;
       }

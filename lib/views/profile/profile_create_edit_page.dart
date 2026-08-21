@@ -3,15 +3,16 @@ import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+
+import '../../core/constants/app_colors.dart';
 import '../../core/routing/app_router.dart';
 import '../../core/routing/route_names.dart';
 import '../../models/child_profile.dart';
 import '../../viewmodels/auth_viewmodel.dart';
 import '../../viewmodels/profile_viewmodel.dart';
 import '../../widgets/app_primary_button.dart';
-import '../../core/constants/app_colors.dart';
 import '../../widgets/child_avatar.dart';
 
 class ProfileCreateEditPage extends StatefulWidget {
@@ -41,12 +42,12 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
     'koala-coral',
     'koala-honey',
   ];
+
   @override
   void initState() {
     super.initState();
     _nameController.addListener(_refreshAvatarPreview);
   }
-
 
   @override
   void dispose() {
@@ -54,10 +55,10 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
     _nameController.dispose();
     super.dispose();
   }
+
   void _refreshAvatarPreview() {
     if (mounted) setState(() {});
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -95,86 +96,89 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
             _ProfileFormHero(isEditing: isEditing),
             const SizedBox(height: 16),
             _FancyProfileField(
-                child: TextField(
-                  controller: _nameController,
-                  textInputAction: TextInputAction.done,
-                  cursorColor: AppColors.plum,
-                  decoration: const InputDecoration(
-                    labelText: 'Child name',
-                    prefixIcon: Icon(Icons.badge_rounded),
-                    border: InputBorder.none,
-                    enabledBorder: InputBorder.none,
-                    focusedBorder: InputBorder.none,
+              child: TextField(
+                controller: _nameController,
+                textInputAction: TextInputAction.done,
+                cursorColor: AppColors.plum,
+                decoration: const InputDecoration(
+                  labelText: 'Child name',
+                  prefixIcon: Icon(Icons.badge_rounded),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const _SectionHeading(
+              icon: Icons.cake_rounded,
+              label: 'Age',
+              helper: 'Choose an age from 3 to 8.',
+            ),
+            const SizedBox(height: 10),
+            _AgeSelector(
+              age: _age,
+              onChanged: (age) => setState(() => _age = age),
+            ),
+            const SizedBox(height: 16),
+            const _SectionHeading(
+              icon: Icons.face_rounded,
+              label: 'Avatar',
+              helper: 'Pick a color avatar or choose a photo.',
+            ),
+            const SizedBox(height: 8),
+            _AvatarPicker(
+              name: _nameController.text.trim().isEmpty
+                  ? 'Learner'
+                  : _nameController.text,
+              selectedAvatar: _avatarAsset,
+              avatars: _avatars,
+              onAvatarSelected: (avatar) {
+                setState(() => _avatarAsset = avatar);
+              },
+              onPickGallery: _pickAvatarFromGallery,
+            ),
+            const SizedBox(height: 16),
+            _FancyProfileField(
+              child: SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Opt in to age-group leaderboard'),
+                subtitle: const Text('Display is anonymized in parent views.'),
+                activeThumbColor: AppColors.honey,
+                activeTrackColor: AppColors.violet,
+                value: _leaderboardOptIn,
+                onChanged: (value) {
+                  setState(() => _leaderboardOptIn = value);
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
+            _FancyProfileField(
+              child: DropdownButtonFormField<String>(
+                initialValue: _displayPreference,
+                decoration: const InputDecoration(
+                  labelText: 'Leaderboard display',
+                  prefixIcon: Icon(Icons.visibility_rounded),
+                  border: InputBorder.none,
+                  enabledBorder: InputBorder.none,
+                  focusedBorder: InputBorder.none,
+                ),
+                items: const [
+                  DropdownMenuItem(value: 'alias', child: Text('Alias')),
+                  DropdownMenuItem(
+                    value: 'firstName',
+                    child: Text('First name'),
                   ),
-                ),
-            const SizedBox(height: 8),
-                const _SectionHeading(
-                  icon: Icons.cake_rounded,
-                  label: 'Age',
-                  helper: 'Choose an age from 3 to 8.',
-                ),
-                const SizedBox(height: 10),
-                _AgeSelector(
-                  age: _age,
-                  onChanged: (age) => setState(() => _age = age),
+                ],
+                onChanged: _leaderboardOptIn
+                    ? (value) {
+                  if (value == null) return;
+                  setState(() => _displayPreference = value);
+                }
+                    : null,
+              ),
             ),
-            const SizedBox(height: 16),
-                const _SectionHeading(
-                    icon: Icons.face_rounded,
-                    label: 'Avatar',
-                    helper: 'Pick a color avatar or choose a photo.',
-             SizedBox(height: 8),
-                    _AvatarPicker(
-                      name: _nameController.text.trim().isEmpty
-                          ? 'Learner'
-                          : _nameController.text,
-                      selectedAvatar: _avatarAsset,
-                      avatars: _avatars,
-                      onAvatarSelected: (avatar) {
-                        setState(() => _avatarAsset = avatar);
-                      },
-                      onPickGallery: _pickAvatarFromGallery,
-            ),
-            const SizedBox(height: 16),
-                    _FancyProfileField(
-                      child: SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Opt in to age-group leaderboard'),
-                        subtitle: const Text('Display is anonymized in parent views.'),
-                        activeThumbColor: AppColors.honey,
-                        activeTrackColor: AppColors.violet,
-                        value: _leaderboardOptIn,
-                        onChanged: (value) {
-                          setState(() => _leaderboardOptIn = value);
-                        },
-                      ),
-            ),
-            const SizedBox(height: 8),
-                    _FancyProfileField(
-                      child: DropdownButtonFormField<String>(
-                        initialValue: _displayPreference,
-                        decoration: const InputDecoration(
-                          labelText: 'Leaderboard display',
-                          prefixIcon: Icon(Icons.visibility_rounded),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                        ),
-                        items: const [
-                          DropdownMenuItem(value: 'alias', child: Text('Alias')),
-                          DropdownMenuItem(
-                            value: 'firstName',
-                            child: Text('First name'),
-                          ),
-                        ],
-                        onChanged: _leaderboardOptIn
-                            ? (value) {
-                          if (value == null) return;
-                          setState(() => _displayPreference = value);
-                        }
-                            : null,
-              ), ),
-                  if (profileVm.errorMessage != null) ...[
+            if (profileVm.errorMessage != null) ...[
               const SizedBox(height: 12),
               Text(
                 profileVm.errorMessage!,
@@ -192,10 +196,10 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
               onPressed: profileVm.isLoading || _isUploadingAvatar
                   ? null
                   : () => _save(
-                        context,
-                        parent.id,
-                        editingProfile,
-                      ),
+                context,
+                parent.id,
+                editingProfile,
+              ),
             ),
           ],
         ),
@@ -213,19 +217,27 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
   }
 
   Future<void> _save(
-    BuildContext context,
-    String parentId,
-    ChildProfile? editingProfile,
-  ) async {
+      BuildContext context,
+      String parentId,
+      ChildProfile? editingProfile,
+      ) async {
     final profileVm = context.read<ProfileViewModel>();
     final avatarForSave = await _avatarForSave(parentId, editingProfile);
-    if (!context.mounted || avatarForSave == null) return;
+    if (!context.mounted) return;
+    // A photo that would not upload must not block creating the profile: the
+    // parent keeps their details and falls back to a colour avatar.
+    if (avatarForSave == null) {
+      final saveWithoutPhoto = await _confirmSaveWithoutPhoto(context);
+      if (!context.mounted || !saveWithoutPhoto) return;
+      setState(() => _avatarAsset = _fallbackAvatar(editingProfile));
+    }
+    final resolvedAvatar = avatarForSave ?? _avatarAsset;
     final success = editingProfile == null
         ? await profileVm.createProfile(
             parentId: parentId,
             name: _nameController.text,
             age: _age,
-            avatarAsset: avatarForSave,
+      avatarAsset: resolvedAvatar,
             leaderboardOptIn: _leaderboardOptIn,
             displayPreference: _displayPreference,
           )
@@ -233,7 +245,7 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
             profile: editingProfile,
             name: _nameController.text,
             age: _age,
-            avatarAsset: avatarForSave,
+      avatarAsset: resolvedAvatar,
             leaderboardOptIn: _leaderboardOptIn,
             displayPreference: _displayPreference,
           );
@@ -280,15 +292,63 @@ class _ProfileCreateEditPageState extends State<ProfileCreateEditPage> {
       if (!mounted) return null;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Avatar upload failed: ${error.message ?? error.code}',
-          ),
+          content: Text(_uploadErrorMessage(error)),
+          duration: const Duration(seconds: 6),
         ),
       );
       return null;
     } finally {
       if (mounted) setState(() => _isUploadingAvatar = false);
     }
+  }
+  /// Firebase Storage error codes say little to a parent, and the two common
+  /// ones here both mean the project is not set up rather than that they did
+  /// something wrong.
+  String _uploadErrorMessage(FirebaseException error) {
+    return switch (error.code) {
+      'object-not-found' || 'bucket-not-found' =>
+      'Photo upload is unavailable: this app\'s photo storage is not set up '
+          'yet. You can still pick a colour avatar.',
+      'unauthorized' =>
+      'Photo upload was not permitted. You can still pick a colour avatar.',
+      'retry-limit-exceeded' || 'network-request-failed' =>
+      'Photo upload timed out. Check your connection and try again.',
+      _ => 'Photo upload failed: ${error.message ?? error.code}',
+    };
+  }
+
+  Future<bool> _confirmSaveWithoutPhoto(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Save without the photo?'),
+          content: const Text(
+            'The photo could not be uploaded. The profile can be saved with a '
+                'colour avatar instead, and you can add a photo later.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Back'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Save anyway'),
+            ),
+          ],
+        );
+      },
+    );
+    return confirmed ?? false;
+  }
+
+  /// Whatever the profile had before the failed photo pick, or the first
+  /// colour avatar for a brand new profile.
+  String _fallbackAvatar(ChildProfile? editingProfile) {
+    final previous = editingProfile?.avatarAsset;
+    if (previous != null && !previous.startsWith('file://')) return previous;
+    return _avatars.first;
   }
 
   Future<void> _confirmDelete(

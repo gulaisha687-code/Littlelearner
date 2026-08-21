@@ -7,6 +7,8 @@ class RouteNames {
   static const forgotPassword = '/forgot-password';
   static const onboardingManual = '/onboarding/manual';
   static const onboardingTest = '/onboarding/test';
+  static const onboardingLanguage = '/onboarding/language';
+  static const parentMarking = '/parent/marking';
   static const adminDashboard = '/admin';
   static const adminContent = '/admin/content';
   static const profiles = '/profiles';

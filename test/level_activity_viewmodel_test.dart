@@ -1,4 +1,3 @@
-import 'package:little_learners/models/trace_score.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:little_learners/models/content_item.dart';
 import 'package:little_learners/models/learning_level.dart';
@@ -58,127 +57,64 @@ void main() {
     });
   });
 
-  group('LevelActivityViewModel tracing', () {
-    test('a passing trace completes the card and stores the score', () {
+  group('LevelActivityViewModel canvas levels', () {
+    // Nothing in the app grades a traced letter any more: the child says when a
+    // page is done and a parent marks the level at the end.
+    test('a tracing card is finished by the child, one letter at a time', () {
       final viewModel = LevelActivityViewModel(_tracingLevel());
 
-      viewModel.recordTraceAttempt(_score(82));
-
-      expect(viewModel.currentItemComplete, isTrue);
-      expect(viewModel.bestTraceScore, 82);
-      expect(viewModel.traceAttempts, 1);
-    });
-
-    test('a failing trace keeps the card open and asks for another try', () {
-      final viewModel = LevelActivityViewModel(_tracingLevel());
-
-      viewModel.recordTraceAttempt(_score(30));
+      expect(viewModel.currentItem.title, 'Letter A');
 
       expect(viewModel.currentItemComplete, isFalse);
-      expect(viewModel.bestTraceScore, 30);
-      expect(viewModel.hasTraceAttemptsLeft, isTrue);
-    });
+      viewModel.markCurrentLearned();
+           expect(viewModel.currentItemComplete, isTrue);
+      expect(viewModel.isActivityComplete, isFalse);
 
-    test('retries only ever improve the stored score', () {
-      final viewModel = LevelActivityViewModel(_tracingLevel());
+      viewModel.nextItem();
 
-      viewModel.recordTraceAttempt(_score(64));
-      viewModel.recordTraceAttempt(_score(41));
-
-      expect(viewModel.bestTraceScore, 64);
-    });
-
-    test('the card unlocks after the attempt limit even when failing', () {
-      final viewModel = LevelActivityViewModel(_tracingLevel());
-
-      for (var attempt = 0;
-      attempt < LevelActivityViewModel.maxTraceAttempts;
-      attempt++) {
-        viewModel.recordTraceAttempt(_score(20));
-      }
-
-      expect(viewModel.currentItemComplete, isTrue);
-      expect(viewModel.hasTraceAttemptsLeft, isFalse);
-      expect(viewModel.bestTraceScore, 20);
-    });
-
-    test('checking a blank canvas does not burn an attempt', () {
-      final viewModel = LevelActivityViewModel(_tracingLevel());
-
-      viewModel.recordTraceAttempt(const TraceScore.empty());
-
-      expect(viewModel.traceAttempts, 0);
+      expect(viewModel.currentItem.title, 'Letter B');
       expect(viewModel.currentItemComplete, isFalse);
-      expect(viewModel.lastTraceScore, isNotNull);
+      viewModel.markCurrentLearned();
+
+      expect(viewModel.isActivityComplete, isTrue);
     });
 
-    test('level score averages the best attempt on every card', () {
+    test('restart sends the level back to its first card', () {
       final viewModel = LevelActivityViewModel(_tracingLevel());
 
-      viewModel.recordTraceAttempt(_score(90));
+      viewModel.markCurrentLearned();
       viewModel.nextItem();
-      viewModel.recordTraceAttempt(_score(70));
-
-      expect(viewModel.traceLevelScore, 80);
-      expect(viewModel.traceLevelPassed, isTrue);
-    });
-
-    test('cards left untraced pull the level score down', () {
-      final viewModel = LevelActivityViewModel(_tracingLevel());
-
-      viewModel.recordTraceAttempt(_score(90));
-
-      // Second card never attempted, so it counts as zero.
-      expect(viewModel.traceLevelScore, 45);
-      expect(viewModel.traceLevelPassed, isFalse);
-    });
-
-    test('restart clears every stored score so a retry starts fresh', () {
-      final viewModel = LevelActivityViewModel(_tracingLevel());
-
-      viewModel.recordTraceAttempt(_score(90));
-      viewModel.nextItem();
-      viewModel.recordTraceAttempt(_score(88));
+      viewModel.markCurrentLearned();
       viewModel.restart();
 
       expect(viewModel.itemIndex, 0);
-      expect(viewModel.traceLevelScore, 0);
-      expect(viewModel.bestTraceScore, 0);
-      expect(viewModel.traceAttempts, 0);
-      expect(viewModel.lastTraceScore, isNull);
+      expect(viewModel.isActivityComplete, isFalse);
       expect(viewModel.currentItemComplete, isFalse);
     });
 
-    test('moving to the next card resets the attempt counter', () {
+// The canvas views watch this, because on a one-card level the item index
+    // is already zero and cannot tell them the page should be wiped.
+    test('restart bumps the attempt counter even from the first card', () {
       final viewModel = LevelActivityViewModel(_tracingLevel());
+      final attempt = viewModel.attempt;
 
-      viewModel.recordTraceAttempt(_score(20));
-      viewModel.recordTraceAttempt(_score(85));
+      viewModel.markCurrentLearned();
+      viewModel.restart();
+
+      expect(viewModel.attempt, attempt + 1);
+    });
+
+    test('moving between cards leaves the attempt counter alone', () {
+      final viewModel = LevelActivityViewModel(_tracingLevel());
+      final attempt = viewModel.attempt;
+      viewModel.markCurrentLearned();
       viewModel.nextItem();
 
-      expect(viewModel.traceAttempts, 0);
-      expect(viewModel.lastTraceScore, isNull);
-      expect(viewModel.bestTraceScore, 0);
-    });
-
-    test('non-tracing levels ignore trace attempts', () {
-      final viewModel = LevelActivityViewModel(_drawingLevel());
-
-      viewModel.recordTraceAttempt(_score(95));
-
-      expect(viewModel.currentItemComplete, isFalse);
-      expect(viewModel.traceAttempts, 0);
+      expect(viewModel.attempt, attempt);
     });
   });
 }
-TraceScore _score(int value) {
-  return TraceScore(
-    coverage: value / 100,
-    precision: value / 100,
-    score: value,
-    hasInk: true,
-  );
-}
+
 
 LearningLevel _countingLevel() {
   return const LearningLevel(
